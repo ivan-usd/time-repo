@@ -1,0 +1,39 @@
+---
+title: "EDA Notebook"
+output: html_document
+---
+
+```{r}
+library("tidyverse")
+library("dplyr")
+library(fpp2)
+```
+
+
+
+```{r}
+construction <- read.csv("Data/VIP-mf.csv")
+date_index <- read.csv("Data/date-index.csv")
+overall_spending <- filter(construction, cat_idx==1 & dt_idx ==1)
+
+combined <- merge(overall_spending, date_index, by = "per_idx")
+combined$per_name <- paste(combined$per_name,"-01",sep="")
+
+combined$date <- as.Date(combined$per_name, format = "%b-%y-%d")
+overall_spending_ts <- ts(combined$val, start = c(2002, 1), frequency = 12)
+
+autoplot(overall_spending_ts)
+
+```
+
+```{r}
+private_commercial <- filter(construction, cat_idx==6 & dt_idx ==2)
+
+combined <- merge(private_commercial, date_index, by = "per_idx")
+combined$per_name <- paste(combined$per_name,"-01",sep="")
+combined$date <- as.Date(combined$per_name, format = "%b-%y-%d")
+
+private_commercial_ts <- ts(combined$val, start = c(2002, 1), frequency = 12)
+
+autoplot(private_commercial_ts)
+```
