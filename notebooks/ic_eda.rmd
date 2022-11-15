@@ -12,8 +12,8 @@ library(fpp2)
 
 
 ```{r}
-construction <- read.csv("Data/VIP-mf.csv")
-date_index <- read.csv("Data/date-index.csv")
+construction <- read.csv("data/VIP-mf.csv")
+date_index <- read.csv("data/date-index.csv")
 overall_spending <- filter(construction, cat_idx==1 & dt_idx ==1)
 
 combined <- merge(overall_spending, date_index, by = "per_idx")

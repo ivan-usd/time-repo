@@ -2,5 +2,5 @@
 <br></br>
 **Initials-Description.rmd**
 <br></br>
-i.e) iac_data_exploration.rmd
+i.e) ic_data_exploration.rmd
 
