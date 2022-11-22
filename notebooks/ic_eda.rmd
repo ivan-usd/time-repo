@@ -6,34 +6,138 @@ output: html_document
 ```{r}
 library("tidyverse")
 library("dplyr")
-library(fpp2)
+library('fpp2')
+library('tseries')
+library(zoo)
 ```
 
 
 
 ```{r}
-construction <- read.csv("data/VIP-mf.csv")
-date_index <- read.csv("data/date-index.csv")
-overall_spending <- filter(construction, cat_idx==1 & dt_idx ==1)
+#load the data
+construction <- read.csv("../data/VIP-mf.csv")
+date_index <- read.csv("../data/date-index.csv")
 
-combined <- merge(overall_spending, date_index, by = "per_idx")
-combined$per_name <- paste(combined$per_name,"-01",sep="")
+#function to filter spending categories and types
+filter_data_ts <- function(category, type) {
+    overall_spending <- filter(construction, cat_idx==category & dt_idx ==type)
+    combined <- merge(overall_spending, date_index, by = "per_idx")
+    combined$per_name <- paste(combined$per_name,"-01",sep="")
+    combined$date <- as.Date(combined$per_name, format = "%b-%y-%d")
+    return(ts(combined$val, start = c(2002, 1), frequency = 12))
+}
 
-combined$date <- as.Date(combined$per_name, format = "%b-%y-%d")
-overall_spending_ts <- ts(combined$val, start = c(2002, 1), frequency = 12)
+#create time series and plot for overall spending
+overall_spending_ts <- filter_data_ts(1, 1)
 
-autoplot(overall_spending_ts)
+ma.trailing <- rollmean(overall_spending_ts, k = 12, align = "right")
+ma.centered <- ma(overall_spending_ts, order = 12)
+plot(overall_spending_ts, xlab = "Year", ylab = "Overall Total Spending", bty = "l")
+lines(ma.trailing, lwd = 2, lty = 2)
+lines(ma.centered, lwd = 2)
 
 ```
 
 ```{r}
-private_commercial <- filter(construction, cat_idx==6 & dt_idx ==2)
+#create time series and plot for commercial-private spending
+private_commercial_ts <- filter_data_ts(6, 2)
 
-combined <- merge(private_commercial, date_index, by = "per_idx")
-combined$per_name <- paste(combined$per_name,"-01",sep="")
-combined$date <- as.Date(combined$per_name, format = "%b-%y-%d")
-
-private_commercial_ts <- ts(combined$val, start = c(2002, 1), frequency = 12)
-
-autoplot(private_commercial_ts)
+ma.trailing <- rollmean(private_commercial_ts, k = 12, align = "right")
+ma.centered <- ma(private_commercial_ts, order = 12)
+plot(private_commercial_ts, xlab = "Year", ylab = "Total Private-Commercial Spending", bty = "l")
+lines(ma.trailing, lwd = 2, lty = 2)
+lines(ma.centered, lwd = 2)
 ```
+```{r}
+#create time series and plot for total plublic spending
+public_total_ts <- filter_data_ts(1, 3)
+
+ma.trailing <- rollmean(public_total_ts, k = 12, align = "right")
+ma.centered <- ma(public_total_ts, order = 12)
+plot(public_total_ts, xlab = "Year", ylab = "Total Public Spending", bty = "l")
+lines(ma.trailing, lwd = 2, lty = 2)
+lines(ma.centered, lwd = 2)
+```
+
+```{r}
+#create time series and plot for total private spending
+private_total_ts <- filter_data_ts(1, 2)
+
+ma.trailing <- rollmean(private_total_ts, k = 12, align = "right")
+ma.centered <- ma(private_total_ts, order = 12)
+plot(private_total_ts, xlab = "Year", ylab = "Total Private Spending", bty = "l")
+lines(ma.trailing, lwd = 2, lty = 2)
+lines(ma.centered, lwd = 2)
+```
+```{r}
+#create time series and plot for total residential spending
+residential_total <- filter_data_ts(2,1)
+
+ma.trailing <- rollmean(residential_total, k = 12, align = "right")
+ma.centered <- ma(residential_total, order = 12)
+plot(residential_total, xlab = "Year", ylab = "Total Residential Spending", bty = "l")
+lines(ma.trailing, lwd = 2, lty = 2)
+lines(ma.centered, lwd = 2)
+```
+
+
+
+```{r}
+#autoplot(filter_data_ts(1, 3))
+adf.test(filter_data_ts(5, 3))
+autoplot(diff(overall_spending_ts))
+```
+
+# Testing via Augmented Dickey-Fuller Test
+```{r}
+# nonstationary: bad stationary: good
+# https://www.investopedia.com/articles/trading/07/stationary.asp
+adf.test(overall_spending_ts)
+adf.test(diff(overall_spending_ts))
+adf.test(private_commercial_ts)
+adf.test(public_total_ts)
+adf.test(private_total_ts)
+
+```
+
+```{r}
+#autocorrelation plot for overall spending
+acf(overall_spending_ts, lag.max = 40)
+```
+```{r}
+#autocorrelation plot for total public spending
+acf(total_public_ts, lag.max = 40)
+```
+
+```{r}
+#autocorrelation plot for total private spending
+acf(total_private_ts, lag.max = 40)
+```
+
+
+```{r}
+ar1_close <- Arima(overall_spending_ts, order = c(1,0,0))
+ar1_diff <- Arima(diff(overall_spending_ts), order = c(1,0,0))
+
+print(ar1_close)
+print(ar1_diff)
+```
+Preprocessing
+
+```{r}
+#remove trend and seasonality from total spending:
+overall.diff.twice <- diff(diff(overall_spending_ts, lag = 12), lag = 1)
+plot(overall.diff.twice)
+```
+
+```{r}
+#remove trend and seasonality from total public spending:
+public.diff.twice <- diff(diff(total_public_ts, lag = 12), lag = 1)
+plot(public.diff.twice)
+```
+```{r}
+#remove trend and seasonality from total private spending:
+private.diff.twice <- diff(diff(total_private_ts, lag = 12), lag = 1)
+plot(private.diff.twice)
+```
+
