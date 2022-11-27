@@ -1,0 +1,31 @@
+---
+title: "Naive Forecast"
+output: html_document
+---
+```{r}
+library("tidyverse")
+library("dplyr")
+library('fpp2')
+library('tseries')
+library("zoo")
+library("lubridate")
+```
+
+```{r}
+
+source("functions/globals.R")
+
+```
+
+```{r}
+#load the data
+construction <- read.csv("../data/VIP-mf.csv")
+date_index <- read.csv("../data/date-index.csv")
+```
+```{r}
+#create time series for overall spending
+overall_spendingTS <- filter_data_ts(1, 1)
+
+train_spending <- window(overall_spendingTS, start=c(2002,1), end=c(2022,1))
+validation_spending <- window(overall_spendingTS, start=c(2022,2))
+```

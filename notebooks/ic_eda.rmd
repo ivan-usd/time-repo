@@ -8,24 +8,18 @@ library("tidyverse")
 library("dplyr")
 library('fpp2')
 library('tseries')
-library(zoo)
+library("zoo")
 ```
 
-
+```{r}
+source("functions/globals.R")
+```
 
 ```{r}
+
 #load the data
 construction <- read.csv("../data/VIP-mf.csv")
 date_index <- read.csv("../data/date-index.csv")
-
-#function to filter spending categories and types
-filter_data_ts <- function(category, type) {
-    overall_spending <- filter(construction, cat_idx==category & dt_idx ==type)
-    combined <- merge(overall_spending, date_index, by = "per_idx")
-    combined$per_name <- paste(combined$per_name,"-01",sep="")
-    combined$date <- as.Date(combined$per_name, format = "%b-%y-%d")
-    return(ts(combined$val, start = c(2002, 1), frequency = 12))
-}
 
 #create time series and plot for overall spending
 overall_spending_ts <- filter_data_ts(1, 1)
@@ -106,12 +100,12 @@ acf(overall_spending_ts, lag.max = 40)
 ```
 ```{r}
 #autocorrelation plot for total public spending
-acf(total_public_ts, lag.max = 40)
+acf(public_total_ts, lag.max = 40)
 ```
 
 ```{r}
 #autocorrelation plot for total private spending
-acf(total_private_ts, lag.max = 40)
+acf(private_total_ts, lag.max = 40)
 ```
 
 
@@ -132,12 +126,11 @@ plot(overall.diff.twice)
 
 ```{r}
 #remove trend and seasonality from total public spending:
-public.diff.twice <- diff(diff(total_public_ts, lag = 12), lag = 1)
+public.diff.twice <- diff(diff(public_total_ts, lag = 12), lag = 1)
 plot(public.diff.twice)
 ```
 ```{r}
 #remove trend and seasonality from total private spending:
-private.diff.twice <- diff(diff(total_private_ts, lag = 12), lag = 1)
+private.diff.twice <- diff(diff(private_total_ts, lag = 12), lag = 1)
 plot(private.diff.twice)
 ```
-
