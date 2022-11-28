@@ -1,5 +1,5 @@
 ---
-title: "Naive Forecast"
+title: "Naive Forecasts"
 output: html_document
 ---
 ```{r}
@@ -28,4 +28,52 @@ overall_spendingTS <- filter_data_ts(1, 1)
 
 train_spending <- window(overall_spendingTS, start=c(2002,1), end=c(2022,1))
 validation_spending <- window(overall_spendingTS, start=c(2022,2))
+```
+
+# Naive Model
+```{r}
+# Naive Model
+
+# naive model
+n_model <- naive(train_spending, h = 8, level = 95)
+
+autoplot(train_spending) +
+  autolayer(n_model, color = "#006d2c", series = "Naive") +
+  autolayer(validation_spending, color = "blue", series = "Actual")
+
+```
+
+# Seasonal Naive Model
+```{r}
+# Seasonal Naive Model
+# seasonal naive
+sn_model <- snaive(train_spending, h = 8)
+
+autoplot(train_spending) +
+  autolayer(sn_model, color = "#006d2c", series = "Seasonal Naive") +
+  autolayer(validation_spending, color = "blue", series = "Actual")
+```
+
+```{r}
+# season & trend
+st_model <- tslm(train_spending ~ trend + season)
+
+summary(st_model)
+
+st_forecast <- forecast(st_model, h = 8)
+
+autoplot(train_spending) +
+  autolayer(st_forecast, color = "#006d2c", series = "season trend") +
+  autolayer(validation_spending, color = "blue", series = "Actual")
+
+
+
+accuracy(st_forecast)
+accuracy(n_model)
+accuracy(sn_model)
+
+
+mean(abs(n_model$residuals), na.rm = T)
+
+sqrt(mean(n_model$residuals^2, na.rm = T))
 ```
