@@ -26,8 +26,10 @@ date_index <- read.csv("../data/date-index.csv")
 #create time series for overall spending
 overall_spendingTS <- filter_data_ts(1, 1)
 
-train_spending <- window(overall_spendingTS, start=c(2002,1), end=c(2022,1))
-validation_spending <- window(overall_spendingTS, start=c(2022,2))
+# Training Period set from Jan 2002 to Jun 2022
+# Validation covers following three months July, August, September
+train_spending <- window(overall_spendingTS, start=c(2002,1), end=c(2022,6))
+validation_spending <- window(overall_spendingTS, start=c(2022,7))
 ```
 
 # Naive Model
@@ -35,7 +37,7 @@ validation_spending <- window(overall_spendingTS, start=c(2022,2))
 # Naive Model
 
 # naive model
-n_model <- naive(train_spending, h = 8, level = 95)
+n_model <- naive(train_spending, h = 3)
 
 autoplot(train_spending) +
   autolayer(n_model, color = "#006d2c", series = "Naive") +
@@ -47,7 +49,7 @@ autoplot(train_spending) +
 ```{r}
 # Seasonal Naive Model
 # seasonal naive
-sn_model <- snaive(train_spending, h = 8)
+sn_model <- snaive(train_spending, h = 3)
 
 autoplot(train_spending) +
   autolayer(sn_model, color = "#006d2c", series = "Seasonal Naive") +
@@ -55,25 +57,16 @@ autoplot(train_spending) +
 ```
 
 ```{r}
-# season & trend
-st_model <- tslm(train_spending ~ trend + season)
+n_results <- accuracy(n_model)
+sn_results <- accuracy(sn_model)
 
-summary(st_model)
+print("Naive Model Results:")
+cat("RMSE:" , n_results[2])
+cat("\nF1:" , n_results[7], '\n')
 
-st_forecast <- forecast(st_model, h = 8)
-
-autoplot(train_spending) +
-  autolayer(st_forecast, color = "#006d2c", series = "season trend") +
-  autolayer(validation_spending, color = "blue", series = "Actual")
-
-
-
-accuracy(st_forecast)
-accuracy(n_model)
-accuracy(sn_model)
+print("Seasonal Naive Model Results:")
+cat("RMSE:" , sn_results[2])
+cat("\nF1:" , sn_results[7])
 
 
-mean(abs(n_model$residuals), na.rm = T)
-
-sqrt(mean(n_model$residuals^2, na.rm = T))
 ```

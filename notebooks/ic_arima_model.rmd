@@ -1,0 +1,74 @@
+---
+title: "Arima Forecasts"
+output: html_document
+---
+```{r}
+library("tidyverse")
+library("dplyr")
+library('fpp2')
+library('tseries')
+library("zoo")
+library("lubridate")
+```
+
+```{r}
+
+source("functions/globals.R")
+
+```
+
+```{r}
+#load the data
+construction <- read.csv("../data/VIP-mf.csv")
+date_index <- read.csv("../data/date-index.csv")
+```
+```{r}
+#create time series for overall spending
+overall_spendingTS <- filter_data_ts(1, 1)
+
+# Training Period set from Jan 2002 to Jun 2022
+# Validation covers following three months July, August, September
+train_spending <- window(overall_spendingTS, start=c(2002,1), end=c(2022,6))
+validation_spending <- window(overall_spendingTS, start=c(2022,7))
+```
+
+```{r}
+# looking at overall acf
+acf(overall_spendingTS, lag.max = 50)
+
+# looking at a single difference
+acf(diff(overall_spendingTS), lag.max = 50)
+
+pacf(diff(overall_spendingTS), lag.max = 50)
+```
+
+```{r}
+# looking at seasonal differences
+pacf(diff(diff(overall_spendingTS)), lag.max = 50)
+acf(diff(diff(overall_spendingTS)), lag.max = 50)
+```
+
+```{r}
+auto_model <- auto.arima(train_spending)
+auto_model
+```
+```{r}
+arima_model <- arima(train_spending, order = c(0,2,3), seasonal = c(0,1,2))
+arima_model
+```
+```{r}
+arima_model_pred <- forecast(arima_model, h = 3 )
+summary(arima_model_pred)
+```
+```{r}
+autoplot(train_spending) +
+  autolayer(arima_model_pred, color = "#006d2c", series = "ARIMA") +
+  autolayer(validation_spending, color = "blue", series = "Actual")
+```
+```{r}
+arima_results <- accuracy(arima_model_pred)
+
+print("ARIMA Model Results:")
+cat("RMSE:" , arima_results[2])
+cat("\nF1:" , arima_results[7], '\n')
+```
