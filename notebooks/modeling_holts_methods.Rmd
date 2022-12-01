@@ -1,0 +1,137 @@
+---
+title: "Naive Forecasts"
+output: html_document
+---
+```{r}
+library("tidyverse")
+library("dplyr")
+library('fpp2')
+library('tseries')
+library("zoo")
+library("lubridate")
+library("Metrics")
+```
+
+```{r}
+source("functions/globals.R")
+```
+
+```{r}
+#load the data
+construction <- read.csv("../data/VIP-mf.csv")
+date_index <- read.csv("../data/date-index.csv")
+```
+
+
+```{r}
+#create time series for overall spending
+overall_spendingTS <- filter_data_ts(1, 1)
+overall_spendingTS
+```
+```{r}
+# Training Period set from Jan 2002 to Jun 2022
+# Validation covers following three months July, August, September
+train_spending <- window(overall_spendingTS, start=c(2002,1), end=c(2022,6))
+validation_spending <- window(overall_spendingTS, start=c(2022,7))
+```
+
+# Holt's Linear Trend
+```{r}
+holt_linear_trend <- holt(train_spending, PI=FALSE)
+
+summary(holt_linear_trend)
+```
+```{r}
+autoplot(train_spending) +
+  autolayer(holt_linear_trend, color = "#006d2c", series = "Holt's Linear Trend") +
+  autolayer(validation_spending, color = "blue", series = "Actual")
+```
+
+```{r}
+holt_linear_trend_cv <- function(x, h){forecast(holt(x, PI=FALSE, h=h))}
+holt_linear_trend_errors <- tsCV(overall_spendingTS, 
+                                 holt_linear_trend_cv, 
+                                 h=1, 
+                                 window = 60)
+
+mean(abs(holt_linear_trend_errors), na.rm = TRUE)
+```
+```{r}
+sd(holt_linear_trend_errors, na.rm = TRUE)
+```
+
+# Damped Holt's Linear Trend
+```{r}
+damped_holt_linear_trend <- holt(train_spending, damped = TRUE, PI=FALSE)
+
+
+summary(damped_holt_linear_trend)
+```
+
+```{r}
+autoplot(train_spending) +
+  autolayer(damped_holt_linear_trend, color = "#006d2c", series = "Damped Holt's Linear Trend") +
+  autolayer(validation_spending, color = "blue", series = "Actual")
+```
+```{r}
+damped_holt_linear_trend_cv <- function(x, h){forecast(holt(x, damped = TRUE, PI=FALSE, h=h))}
+damped_holt_linear_trend_errors <- tsCV(overall_spendingTS, 
+                                 damped_holt_linear_trend_cv, 
+                                 h=1, 
+                                 window = 60)
+
+mean(abs(damped_holt_linear_trend_errors), na.rm = TRUE)
+```
+```{r}
+sd(damped_holt_linear_trend_errors, na.rm = TRUE)
+```
+
+# Holt-Winters Seasonality - Multiplicative
+```{r}
+holt_winters_mult <- hw(train_spending, seasonal = "multiplicative", PI=FALSE)
+
+summary(holt_winters_mult)
+```
+```{r}
+autoplot(train_spending) +
+  autolayer(holt_winters_mult, color = "#006d2c", series = "Holt-Winters") +
+  autolayer(validation_spending, color = "blue", series = "Actual")
+```
+```{r}
+holt_winters_mult_cv <- function(x, h){forecast(hw(x, seasonal = "multiplicative", PI=FALSE, h=h))}
+holt_winters_mult_errors <- tsCV(overall_spendingTS, 
+                                 holt_winters_mult_cv, 
+                                 h=1, 
+                                 window = 60)
+
+mean(abs(holt_winters_mult_errors), na.rm = TRUE)
+```
+```{r}
+sd(holt_winters_mult_errors, na.rm = TRUE)
+```
+
+
+# Holt-Winters Seasonality - Additive
+```{r}
+holt_winters_add <- hw(train_spending, seasonal = "additive", PI=FALSE)
+
+summary(holt_winters_add)
+```
+```{r}
+autoplot(train_spending) +
+  autolayer(holt_winters_add, color = "#006d2c", series = "Holt-Winters Additive") +
+  autolayer(validation_spending, color = "blue", series = "Actual")
+```
+
+```{r}
+holt_winters_add_cv <- function(x, h){forecast(hw(x, seasonal = "additive", PI=FALSE, h=h))}
+holt_winters_add_errors <- tsCV(overall_spendingTS, 
+                                 holt_winters_add_cv, 
+                                 h=1, 
+                                 window = 60)
+
+mean(abs(holt_winters_add_errors), na.rm = TRUE)
+```
+```{r}
+sd(holt_winters_add_errors, na.rm = TRUE)
+```
