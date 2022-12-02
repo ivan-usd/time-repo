@@ -53,11 +53,24 @@ auto_model <- auto.arima(train_spending)
 auto_model
 ```
 ```{r}
+auto_model_cv <- function(x, h){forecast(auto.arima(x),  h=h)}
+auto_model_errors <- tsCV(overall_spendingTS,
+                          auto_model_cv,
+                          h=1,
+                          window = 60)
+
+mean(abs(auto_model_errors), na.rm = TRUE)
+```
+```{r}
+sd(auto_model_errors, na.rm = TRUE)
+```
+
+```{r}
 arima_model <- arima(train_spending, order = c(0,2,3), seasonal = c(0,1,2))
 arima_model
 ```
 ```{r}
-arima_model_pred <- forecast(arima_model, h = 3 )
+arima_model_pred <- forecast(arima_model, h = 1 )
 summary(arima_model_pred)
 ```
 ```{r}
@@ -65,6 +78,20 @@ autoplot(train_spending) +
   autolayer(arima_model_pred, color = "#006d2c", series = "ARIMA") +
   autolayer(validation_spending, color = "blue", series = "Actual")
 ```
+
+```{r}
+arima_model_cv <- function(x, h){forecast(arima(x, order = c(0,2,3), seasonal = c(0,1,2)),  h=h)}
+arima_model_errors <- tsCV(overall_spendingTS,
+                          arima_model_cv,
+                          h=1,
+                          window = 60)
+
+mean(abs(arima_model_errors), na.rm = TRUE)
+```
+```{r}
+sd(arima_model_errors, na.rm = TRUE)
+```
+
 ```{r}
 arima_results <- accuracy(arima_model_pred)
 

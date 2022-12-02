@@ -1,5 +1,5 @@
 ---
-title: "Naive Forecasts"
+title: "Holt's Forecasts"
 output: html_document
 ---
 ```{r}
@@ -63,7 +63,6 @@ sd(holt_linear_trend_errors, na.rm = TRUE)
 # Damped Holt's Linear Trend
 ```{r}
 damped_holt_linear_trend <- holt(train_spending, damped = TRUE, PI=FALSE)
-
 
 summary(damped_holt_linear_trend)
 ```

@@ -1,5 +1,5 @@
 ---
-title: "EDA Notebook"
+title: "Exploratory Data Analysis"
 output: html_document
 ---
 
