@@ -1,0 +1,104 @@
+---
+title: "Neural Network Forecasts"
+output: html_document
+---
+```{r}
+library("tidyverse")
+library("dplyr")
+library('fpp2')
+library('tseries')
+library("zoo")
+library("lubridate")
+```
+
+```{r}
+
+source("functions/globals.R")
+
+```
+
+```{r}
+#load the data
+construction <- read.csv("../data/VIP-mf.csv")
+date_index <- read.csv("../data/date-index.csv")
+```
+```{r}
+#create time series for overall spending
+overall_spendingTS <- filter_data_ts(1, 1)
+
+# Training Period set from Jan 2002 to Jun 2022
+# Validation covers following three months July, August, September
+train_spending <- window(overall_spendingTS, start=c(2002,1), end=c(2022,6))
+validation_spending <- window(overall_spendingTS, start=c(2022,7))
+```
+
+
+```{r}
+# Neural networks
+
+# non-seasonal lags
+# ar(p)
+# p = 0
+
+# seasonal Lags
+# P = 0
+
+# size = (p + P + 1)/2  rounded to nearest integer
+# 0 + 0 + 1 = 5 / 2 = 3
+spend1.nnetar <- nnetar(train_spending, p = 0, P = 0, size = 1)
+summary(spend1.nnetar)
+
+spend1.nnetar.pred <- forecast(spend1.nnetar, h = 3)
+spend1.nnetar.pred
+
+accuracy(spend1.nnetar.pred, validation_spending)
+
+```
+
+
+```{r}
+nn_cv <- function(x, h){forecast(nnetar(x, p = 0, P = 0, size = 1), h=h)}
+nn_model_errors <- tsCV(overall_spendingTS,
+                          nn_cv,
+                          h=1,
+                          window = 60)
+
+mean(abs(nn_model_errors), na.rm = TRUE)
+```
+
+```{r}
+sd(nn_model_errors, na.rm = TRUE)
+```
+
+```{r}
+spend.nnetar <- nnetar(train_spending)
+summary(spend.nnetar)
+
+spend.nnetar.pred <- forecast(spend.nnetar, h = 3)
+spend.nnetar.pred
+```
+
+
+```{r}
+nn_cv <- function(x, h){forecast(nnetar(x), h=h)}
+nn_model_errors <- tsCV(overall_spendingTS,
+                          nn_cv,
+                          h=1,
+                          window = 60)
+
+mean(abs(nn_model_errors), na.rm = TRUE)
+```
+
+```{r}
+sd(nn_model_errors, na.rm = TRUE)
+```
+
+
+```{r}
+nn_results <- accuracy(spend.nnetar.pred, validation_spending)
+nn_results
+
+print("Neural Network Model Results:")
+cat("RMSE:" , nn_results[3])
+cat("\nF1:" , nn_results[8], '\n')
+```
