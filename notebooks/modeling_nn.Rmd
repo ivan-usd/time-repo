@@ -1,6 +1,9 @@
 ---
 title: "Neural Network Forecasts"
-output: html_document
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
 ---
 ```{r}
 library("tidyverse")
@@ -12,9 +15,11 @@ library("lubridate")
 ```
 
 ```{r}
-
 source("functions/globals.R")
+```
 
+```{r}
+set.seed(0)
 ```
 
 ```{r}
@@ -50,9 +55,6 @@ summary(spend1.nnetar)
 
 spend1.nnetar.pred <- forecast(spend1.nnetar, h = 3)
 spend1.nnetar.pred
-
-accuracy(spend1.nnetar.pred, validation_spending)
-
 ```
 
 
@@ -63,11 +65,18 @@ nn_model_errors <- tsCV(overall_spendingTS,
                           h=1,
                           window = 60)
 
-mean(abs(nn_model_errors), na.rm = TRUE)
+#mean error
+mean(nn_model_errors, na.rm = TRUE)
 ```
 
 ```{r}
-sd(nn_model_errors, na.rm = TRUE)
+#root mean square error
+sqrt(mean(nn_model_errors^2, na.rm = TRUE))
+```
+
+```{r}
+#mean absolute error
+mean(abs(nn_model_errors), na.rm = TRUE)
 ```
 
 ```{r}
@@ -86,19 +95,23 @@ nn_model_errors <- tsCV(overall_spendingTS,
                           h=1,
                           window = 60)
 
+#mean error
+mean(nn_model_errors, na.rm = TRUE)
+```
+
+```{r}
+#root mean square error
+sqrt(mean(nn_model_errors^2, na.rm = TRUE))
+```
+
+```{r}
+#mean absolute error
 mean(abs(nn_model_errors), na.rm = TRUE)
 ```
 
-```{r}
-sd(nn_model_errors, na.rm = TRUE)
-```
-
 
 ```{r}
-nn_results <- accuracy(spend.nnetar.pred, validation_spending)
+nn_results <- accuracy(spend.nnetar.pred$mean, validation_spending)
 nn_results
 
-print("Neural Network Model Results:")
-cat("RMSE:" , nn_results[3])
-cat("\nF1:" , nn_results[8], '\n')
 ```

@@ -1,6 +1,9 @@
 ---
 title: "Holt's Forecasts"
-output: html_document
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
 ---
 ```{r}
 library("tidyverse")
@@ -17,11 +20,14 @@ source("functions/globals.R")
 ```
 
 ```{r}
+set.seed(0)
+```
+
+```{r}
 #load the data
 construction <- read.csv("../data/VIP-mf.csv")
 date_index <- read.csv("../data/date-index.csv")
 ```
-
 
 ```{r}
 #create time series for overall spending
@@ -54,10 +60,18 @@ holt_linear_trend_errors <- tsCV(overall_spendingTS,
                                  h=1, 
                                  window = 60)
 
-mean(abs(holt_linear_trend_errors), na.rm = TRUE)
+#mean error
+mean(holt_linear_trend_errors, na.rm = TRUE)
 ```
+
 ```{r}
-sd(holt_linear_trend_errors, na.rm = TRUE)
+#root mean square error
+sqrt(mean(holt_linear_trend_errors^2, na.rm = TRUE))
+```
+
+```{r}
+#mean absolute error
+mean(abs(holt_linear_trend_errors), na.rm = TRUE)
 ```
 
 # Damped Holt's Linear Trend
@@ -79,10 +93,18 @@ damped_holt_linear_trend_errors <- tsCV(overall_spendingTS,
                                  h=1, 
                                  window = 60)
 
-mean(abs(damped_holt_linear_trend_errors), na.rm = TRUE)
+#mean error
+mean(damped_holt_linear_trend_errors, na.rm = TRUE)
 ```
+
 ```{r}
-sd(damped_holt_linear_trend_errors, na.rm = TRUE)
+#root mean square error
+sqrt(mean(damped_holt_linear_trend_errors^2, na.rm = TRUE))
+```
+
+```{r}
+#mean absolute error
+mean(abs(damped_holt_linear_trend_errors), na.rm = TRUE)
 ```
 
 # Holt-Winters Seasonality - Multiplicative
@@ -103,10 +125,18 @@ holt_winters_mult_errors <- tsCV(overall_spendingTS,
                                  h=1, 
                                  window = 60)
 
-mean(abs(holt_winters_mult_errors), na.rm = TRUE)
+#mean error
+mean(holt_winters_mult_errors, na.rm = TRUE)
 ```
+
 ```{r}
-sd(holt_winters_mult_errors, na.rm = TRUE)
+#root mean square error
+sqrt(mean(holt_winters_mult_errors^2, na.rm = TRUE))
+```
+
+```{r}
+#mean absolute error
+mean(abs(holt_winters_mult_errors), na.rm = TRUE)
 ```
 
 
@@ -129,8 +159,16 @@ holt_winters_add_errors <- tsCV(overall_spendingTS,
                                  h=1, 
                                  window = 60)
 
-mean(abs(holt_winters_add_errors), na.rm = TRUE)
+#mean error
+mean(holt_winters_add_errors, na.rm = TRUE)
 ```
+
 ```{r}
-sd(holt_winters_add_errors, na.rm = TRUE)
+#root mean square error
+sqrt(mean(holt_winters_add_errors^2, na.rm = TRUE))
+```
+
+```{r}
+#mean absolute error
+mean(abs(holt_winters_add_errors), na.rm = TRUE)
 ```
