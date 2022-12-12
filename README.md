@@ -10,14 +10,13 @@ To accurately forecast the US Census Construction Spending Data
 * Ivan Chavez
 * Ben Earnest
 
-### Methods Used (still under consideration)
+### Methods Used
 * Inferential Statistics
 * Data Visualization
 * Time Series Analysis
 
 ### Technologies
 * R Programming
-* Timeseries Analysis
 
 
 ## Project Description
