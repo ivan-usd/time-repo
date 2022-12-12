@@ -6,6 +6,9 @@
 To accurately forecast the US Census Construction Spending Data
 
 ### Team Members
+* Gary Bair
+* Ivan Chavez
+* Ben Earnest
 
 ### Methods Used (still under consideration)
 * Inferential Statistics
@@ -39,6 +42,6 @@ Economic indicators such as the ones provided by the United States Census Bureau
 ## Featured Notebooks/Analysis/Deliverables
 
 
-## References
+
 
 
